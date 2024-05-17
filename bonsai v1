@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
+import {Ownable} from "solady/auth/Ownable.sol";
+import {LibString} from "solady/utils/LibString.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {DN404} from "dn404-adjustable/DN404.sol";
+import {DN404Mirror} from "dn404-adjustable/DN404Mirror.sol";
+
+contract Bonsai is DN404, Ownable {
+    string private _baseURI;
+    DN404Mirror public mirror;
+
+    constructor(uint96 initialTokenSupply, address initialSupplyOwner, uint96 tokensPerNft) {
+        _initializeOwner(msg.sender);
+
+        mirror = new DN404Mirror(msg.sender);
+        _initializeDN404(initialTokenSupply, initialSupplyOwner, address(mirror), tokensPerNft);
+    }
+
+    function name() public pure override returns (string memory) {
+        return "Bonsai Token";
+    }
+
+    function symbol() public pure override returns (string memory) {
+        return "BONSAI";
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory result) {
+        if (bytes(_baseURI).length != 0) {
+            result = string(abi.encodePacked(_baseURI, LibString.toString(tokenId), ".json"));
+        }
+    }
+
+    function setBaseURI(string calldata baseURI_) public onlyOwner {
+        _baseURI = baseURI_;
+    }
+}
